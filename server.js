@@ -119,7 +119,7 @@ app.post('/users/register', async (req, res) =>{
 
 app.post('/users/login', passport.authenticate('local', {
     successRedirect: '/users/weatherDashboard',
-    failureRedirect: 'users/login',
+    failureRedirect: '/users/login',
     failureFlash: true
 }));
 
