@@ -296,3 +296,14 @@ app.post("/api", (req, res) => {
 });
 
 //show search history
+app.get("/api/weatherHistory", checkNotAuthenticated, (req, res) => {
+  const query = `SELECT * FROM weather_requests WHERE user_id = $1 ORDER BY request_timestamp DESC`;
+  pool.query(query, [req.user.id], (err, results) => {
+    if (err) {
+      console.error("Error retrieving weather history:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+      return;
+    }
+    res.json({ weatherHistory: results.rows });
+  });
+});

@@ -22,7 +22,6 @@
       </div>
     </form>
 
-    <!-- Add this in your weatherDashboard.ejs where appropriate -->
     <button onclick="getLocation()">Use My Location</button>
     <div>
       <p id="description">
@@ -36,54 +35,83 @@
         Feels like: <% if (weatherInfo) { %><%= weatherInfo.tempFeel %>°C<% } %>
       </p>
     </div>
-  </body>
 
-  <div class="history">
-    <h2>Weather History</h2>
-    <% if (weatherHistory) { %> <% weatherHistory.forEach(function(history) { %>
-    <p>
-      <%= new Date(history.request_timestamp).toLocaleString() %>: Location: <%=
-      history.location %>, Temperature: <%= history.temperature %>°C, Feels
-      Like: <%= history.feels_like_temperature %>°C, Description: <%=
-      history.description %>
-    </p>
-    <% }) %> <% } else { %>
-    <p>No history available</p>
-    <% } %>
-  </div>
+    <div class="history">
+      <h2>Weather History</h2>
+      <% if (weatherHistory) { %> <% weatherHistory.forEach(function(history) {
+      %>
+      <p>
+        <%= new Date(history.request_timestamp).toLocaleString() %>: Location:
+        <%= history.location %>, Temperature: <%= history.temperature %>°C,
+        Feels Like: <%= history.feels_like_temperature %>°C, Description: <%=
+        history.description %>
+      </p>
+      <% }) %> <% } else { %>
+      <p>No history available</p>
+      <% } %>
+    </div>
 
-  <script>
-    const description = document.getElementById("description");
-    const temp = document.getElementById("temp");
-    const temp_feels_like = document.getElementById("temp_feels_like");
+    <script>
+      const description = document.getElementById("description");
+      const temp = document.getElementById("temp");
+      const temp_feels_like = document.getElementById("temp_feels_like");
 
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
+      function getLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
 
-          console.log(`latitude is ${lat} and longitude is ${lon}`);
+            console.log(`latitude is ${lat} and longitude is ${lon}`);
 
-          const data = { lat, lon };
-          const options = {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          };
-          fetch("/api", options)
-            .then((res) => res.json())
-            .then((data) => {
-              description.innerText = `Description: ${data.weatherInfo.description}`;
-              temp.innerText = `Temperature: ${data.weatherInfo.temp}°C`;
-              temp_feels_like.innerText = `Feels like: ${data.weatherInfo.tempFeel}°C`;
-            });
-        });
-      } else {
-        alert("Geolocation is not supported by this browser!");
+            const data = { lat, lon };
+            const options = {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            };
+
+            fetch("/api", options)
+              .then((res) => res.json())
+              .then((data) => {
+                description.innerText = `Description: ${data.weatherInfo.description}`;
+                temp.innerText = `Temperature: ${data.weatherInfo.temp}°C`;
+                temp_feels_like.innerText = `Feels like: ${data.weatherInfo.tempFeel}°C`;
+
+                // Fetch and update weather history
+                fetch("/api/weatherHistory")
+                  .then((res) => res.json())
+                  .then((data) => {
+                    updateWeatherHistory(data.weatherHistory);
+                  })
+                  .catch((error) =>
+                    console.error("Error fetching weather history:", error)
+                  );
+              });
+          });
+        } else {
+          alert("Geolocation is not supported by this browser!");
+        }
       }
-    }
-  </script>
+
+      function updateWeatherHistory(history) {
+        const historyDiv = document.querySelector(".history");
+        historyDiv.innerHTML = "<h2>Weather History</h2>";
+        if (history && history.length > 0) {
+          history.forEach((item) => {
+            const dateString = new Date(
+              item.request_timestamp
+            ).toLocaleString();
+            historyDiv.innerHTML += `
+            <p>${dateString}: Location: ${item.location}, Temperature: ${item.temperature}°C, Feels Like: ${item.feels_like_temperature}°C, Description: ${item.description}</p>
+          `;
+          });
+        } else {
+          historyDiv.innerHTML += "<p>No history available</p>";
+        }
+      }
+    </script>
+  </body>
 </html>
