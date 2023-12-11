@@ -184,6 +184,20 @@ function getWeather(cityName, req, res) {
             temp: weatherData.main.temp,
             tempFeel: weatherData.main.feels_like,
           };
+          const insertQuery = `
+        INSERT INTO weather_requests (user_id, location, temperature, feels_like_temperature, description, request_timestamp)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `;
+
+          pool.query(insertQuery, [
+            req.user.id,
+            weatherInfo.location,
+            weatherInfo.temp,
+            weatherInfo.tempFeel,
+            weatherInfo.description,
+            timestamp,
+          ]);
+
           res.render("weatherDashboard", { user: req.user.name, weatherInfo });
           console.log(weatherInfo);
         })
@@ -221,6 +235,18 @@ app.post("/api", (req, res) => {
         temp: weatherData.main.temp,
         tempFeel: weatherData.main.feels_like,
       };
+      const insertQuery = `
+        INSERT INTO weather_requests (user_id, location, temperature, feels_like_temperature, description, request_timestamp)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `;
+      pool.query(insertQuery, [
+        req.user.id,
+        weatherInfo.location,
+        weatherInfo.temp,
+        weatherInfo.tempFeel,
+        weatherInfo.description,
+        timestamp,
+      ]);
       console.log(weatherInfo);
       res.json({
         weatherInfo: weatherInfo,
