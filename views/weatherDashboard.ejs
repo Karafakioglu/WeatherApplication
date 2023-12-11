@@ -25,16 +25,16 @@
     <!-- Add this in your weatherDashboard.ejs where appropriate -->
     <button onclick="getLocation()">Use My Location</button>
     <div>
-      <% if (weatherInfo) { %>
-      <p>Description: <%= weatherInfo.description %></p>
-      <p>Temperature: <%= weatherInfo.temp %>°C</p>
-      <p>Feels like: <%= weatherInfo.tempFeel %>°C</p>
-      <% } else { %> <% } %>
-    </div>
-    <div>
-      <p id="description"></p>
-      <p id="temp"></p>
-      <p id="temp_feels_like"></p>
+      <p id="description">
+        Description: <% if (weatherInfo) { %><%= weatherInfo.description %><% }
+        %>
+      </p>
+      <p id="temp">
+        Temperature: <% if (weatherInfo) { %><%= weatherInfo.temp %>°C<% } %>
+      </p>
+      <p id="temp_feels_like">
+        Feels like: <% if (weatherInfo) { %><%= weatherInfo.tempFeel %>°C<% } %>
+      </p>
     </div>
   </body>
 
@@ -66,9 +66,9 @@
           fetch("/api", options)
             .then((res) => res.json())
             .then((data) => {
-              description.innerText = data.weatherInfo.description;
-              temp.innerText = data.weatherInfo.temp;
-              temp_feels_like.innerText = data.weatherInfo.tempFeel;
+              description.innerText = `Description: ${data.weatherInfo.description}`;
+              temp.innerText = `Temperature: ${data.weatherInfo.temp}`;
+              temp_feels_like.innerText = `Feels like: ${data.weatherInfo.tempFeel}`;
             });
         });
       } else {
