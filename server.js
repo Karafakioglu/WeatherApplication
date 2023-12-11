@@ -11,6 +11,7 @@ const initializePassport = require("./passportConfig");
 initializePassport(passport);
 
 const PORT = process.env.PORT || 4000;
+const openWeatherApiKey = process.env.OPEN_WEATHER_API_KEY;
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
@@ -160,7 +161,7 @@ app.post("/users/weatherDashboard", (req, res) => {
 
 function getWeather(cityName, req, res) {
   fetch(
-    `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=5&appid=da362b5cbee38057ca49f9880098b1a9`
+    `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=5&appid=${openWeatherApiKey}`
   )
     .then((res) => res.json())
     .then((data) => {
@@ -168,7 +169,7 @@ function getWeather(cityName, req, res) {
       const lat = data[0].lat;
 
       fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=da362b5cbee38057ca49f9880098b1a9&units=metric`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${openWeatherApiKey}&units=metric`
       )
         .then((res) => res.json())
         .then((data) => {
@@ -199,7 +200,7 @@ app.post("/api", (req, res) => {
   console.log(req.body);
 
   fetch(
-    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=da362b5cbee38057ca49f9880098b1a9&units=metric`
+    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${openWeatherApiKey}&units=metric`
   )
     .then((res) => res.json())
     .then((data) => {
