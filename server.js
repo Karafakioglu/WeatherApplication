@@ -174,13 +174,18 @@ function getWeather(cityName, req, res) {
       )
         .then((res) => res.json())
         .then((data) => {
+          const timestamp = Date.now();
+          data.timestamp = timestamp;
           const weatherData = data;
           const weatherInfo = {
+            timestamp: timestamp,
+            location: weatherData.name,
             description: weatherData.weather[0].main,
             temp: weatherData.main.temp,
             tempFeel: weatherData.main.feels_like,
           };
           res.render("weatherDashboard", { user: req.user.name, weatherInfo });
+          console.log(weatherInfo);
         })
         .catch((error) => {
           console.error("Error fetching weather data:", error);
@@ -206,8 +211,12 @@ app.post("/api", (req, res) => {
   )
     .then((res) => res.json())
     .then((data) => {
+      const timestamp = Date.now();
+      data.timestamp = timestamp;
       const weatherData = data;
       const weatherInfo = {
+        timestamp: timestamp,
+        location: weatherData.name,
         description: weatherData.weather[0].main,
         temp: weatherData.main.temp,
         tempFeel: weatherData.main.feels_like,
