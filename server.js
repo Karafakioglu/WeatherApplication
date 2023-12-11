@@ -152,8 +152,9 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-//Handling weather stuff
+//Handling weather service
 
+//Manual weather service
 app.post("/users/weatherDashboard", (req, res) => {
   const cityName = req.body["city-name"];
   getWeather(cityName, req, res);
@@ -192,6 +193,7 @@ function getWeather(cityName, req, res) {
     });
 }
 
+//Geolocation weather service
 app.post("/api", (req, res) => {
   const location = req.body;
   const lat = location.lat;

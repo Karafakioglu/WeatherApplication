@@ -67,8 +67,8 @@
             .then((res) => res.json())
             .then((data) => {
               description.innerText = `Description: ${data.weatherInfo.description}`;
-              temp.innerText = `Temperature: ${data.weatherInfo.temp}`;
-              temp_feels_like.innerText = `Feels like: ${data.weatherInfo.tempFeel}`;
+              temp.innerText = `Temperature: ${data.weatherInfo.temp}°C`;
+              temp_feels_like.innerText = `Feels like: ${data.weatherInfo.tempFeel}°C`;
             });
         });
       } else {
