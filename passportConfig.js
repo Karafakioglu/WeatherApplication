@@ -45,19 +45,17 @@ function initialize(passport) {
     )
   );
 
-  passport.serializeUser((user, done)=> done(null,user.id));
+  passport.serializeUser((user, done) => done(null, user.id));
 
-  passport.deserializeUser((id, done)=>{
-    pool.query(
-        `SELECT * FROM users WHERE id = $1`, [id], (err, results)=>{
-            if (err){
-                throw err;
-            }
+  passport.deserializeUser((id, done) => {
+    pool.query(`SELECT * FROM users WHERE id = $1`, [id], (err, results) => {
+      if (err) {
+        throw err;
+      }
 
-            return done(null,results.rows[0]);
-        }
-    )
-  })
+      return done(null, results.rows[0]);
+    });
+  });
 }
 
 module.exports = initialize;
