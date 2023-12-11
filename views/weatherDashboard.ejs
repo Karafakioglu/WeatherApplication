@@ -22,5 +22,58 @@
       </div>
     </form>
 
+    <!-- Add this in your weatherDashboard.ejs where appropriate -->
+    <button onclick="getLocation()">Use My Location</button>
+    <div>
+      <% if (weatherInfo) { %>
+      <p>Description: <%= weatherInfo.description %></p>
+      <p>Temperature: <%= weatherInfo.temp %>°C</p>
+      <p>Feels like: <%= weatherInfo.tempFeel %>°C</p>
+      <% } else { %> <% } %>
+    </div>
+    <div>
+      <p id="description"></p>
+      <p id="temp"></p>
+      <p id="temp_feels_like"></p>
+    </div>
+  </body>
 
+  <div class="history">
+    <p>This is where history will be shown</p>
+  </div>
+
+  <script>
+    const description = document.getElementById("description");
+    const temp = document.getElementById("temp");
+    const temp_feels_like = document.getElementById("temp_feels_like");
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          console.log(`latitude is ${lat} and longitude is ${lon}`);
+
+          const data = { lat, lon };
+          const options = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          };
+          fetch("/api", options)
+            .then((res) => res.json())
+            .then((data) => {
+              description.innerText = data.weatherInfo.description;
+              temp.innerText = data.weatherInfo.temp;
+              temp_feels_like.innerText = data.weatherInfo.tempFeel;
+            });
+        });
+      } else {
+        alert("Geolocation is not supported by this browser!");
+      }
+    }
+  </script>
 </html>

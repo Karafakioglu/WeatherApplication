@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 4000;
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 app.use(
   session({
@@ -190,3 +191,27 @@ function getWeather(cityName, req, res) {
     });
 }
 
+app.post("/api", (req, res) => {
+  const location = req.body;
+  const lat = location.lat;
+  const lon = location.lon;
+
+  console.log(req.body);
+
+  fetch(
+    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=da362b5cbee38057ca49f9880098b1a9&units=metric`
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      const weatherData = data;
+      const weatherInfo = {
+        description: weatherData.weather[0].main,
+        temp: weatherData.main.temp,
+        tempFeel: weatherData.main.feels_like,
+      };
+      console.log(weatherInfo);
+      res.json({
+        weatherInfo: weatherInfo,
+      });
+    });
+});
