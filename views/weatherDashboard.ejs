@@ -39,7 +39,17 @@
   </body>
 
   <div class="history">
-    <p>This is where history will be shown</p>
+    <h2>Weather History</h2>
+    <% if (weatherHistory) { %> <% weatherHistory.forEach(function(history) { %>
+    <p>
+      <%= new Date(history.request_timestamp).toLocaleString() %>: Location: <%=
+      history.location %>, Temperature: <%= history.temperature %>°C, Feels
+      Like: <%= history.feels_like_temperature %>°C, Description: <%=
+      history.description %>
+    </p>
+    <% }) %> <% } else { %>
+    <p>No history available</p>
+    <% } %>
   </div>
 
   <script>

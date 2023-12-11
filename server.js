@@ -45,7 +45,33 @@ app.get("/users/login", checkAuthenticated, (req, res) => {
 });
 
 app.get("/users/weatherDashboard", checkNotAuthenticated, (req, res) => {
-  res.render("weatherDashboard", { user: req.user.name, weatherInfo: null });
+  const query = `SELECT * FROM weather_requests WHERE user_id = $1 ORDER BY request_timestamp DESC`;
+  pool.query(query, [req.user.id], (err, results) => {
+    if (err) {
+      console.error("Error retrieving weather history:", err);
+      return res.status(500).send("Internal Server Error");
+    }
+    res.render("weatherDashboard", {
+      user: req.user.name,
+      weatherInfo: null,
+      weatherHistory: results.rows,
+    });
+  });
+});
+
+app.get("/users/weatherHistory", checkNotAuthenticated, (req, res) => {
+  const query = `SELECT * FROM weather_requests WHERE user_id = $1 ORDER BY request_timestamp DESC`;
+  pool.query(query, [req.user.id], (err, results) => {
+    if (err) {
+      console.error("Error retrieving weather history:", err);
+      return res.status(500).send("Internal Server Error");
+    }
+    res.render("weatherDashboard", {
+      user: req.user.name,
+      weatherInfo: null,
+      weatherHistory: results.rows,
+    });
+  });
 });
 
 app.get("/users/logout", (req, res) => {
@@ -164,50 +190,66 @@ function getWeather(cityName, req, res) {
   fetch(
     `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=5&appid=${openWeatherApiKey}`
   )
-    .then((res) => res.json())
+    .then((response) => response.json())
     .then((data) => {
+      if (data.length === 0) {
+        // Handle the case where the city is not found
+        res.render("weatherDashboard", {
+          user: req.user.name,
+          weatherInfo: null,
+          weatherHistory: null,
+          error: "City not found",
+        });
+        return;
+      }
+
       const lon = data[0].lon;
       const lat = data[0].lat;
 
-      fetch(
+      return fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${openWeatherApiKey}&units=metric`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          const timestamp = Date.now();
-          data.timestamp = timestamp;
-          const weatherData = data;
-          const weatherInfo = {
-            timestamp: timestamp,
-            location: weatherData.name,
-            description: weatherData.weather[0].main,
-            temp: weatherData.main.temp,
-            tempFeel: weatherData.main.feels_like,
-          };
-          const insertQuery = `
+      );
+    })
+    .then((response) => response.json())
+    .then((weatherData) => {
+      const weatherInfo = {
+        location: weatherData.name,
+        description: weatherData.weather[0].main,
+        temp: weatherData.main.temp,
+        tempFeel: weatherData.main.feels_like,
+      };
+
+      const insertQuery = `
         INSERT INTO weather_requests (user_id, location, temperature, feels_like_temperature, description, request_timestamp)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, NOW())
       `;
 
-          pool.query(insertQuery, [
-            req.user.id,
-            weatherInfo.location,
-            weatherInfo.temp,
-            weatherInfo.tempFeel,
-            weatherInfo.description,
-            timestamp,
-          ]);
+      pool.query(insertQuery, [
+        req.user.id,
+        weatherInfo.location,
+        weatherInfo.temp,
+        weatherInfo.tempFeel,
+        weatherInfo.description,
+      ]);
 
-          res.render("weatherDashboard", { user: req.user.name, weatherInfo });
-          console.log(weatherInfo);
-        })
-        .catch((error) => {
-          console.error("Error fetching weather data:", error);
+      // Fetch weather history
+      const historyQuery = `SELECT * FROM weather_requests WHERE user_id = $1 ORDER BY request_timestamp DESC`;
+      pool.query(historyQuery, [req.user.id], (err, historyResults) => {
+        if (err) {
+          console.error("Error retrieving weather history:", err);
           res.status(500).send("Internal Server Error");
+          return;
+        }
+
+        res.render("weatherDashboard", {
+          user: req.user.name,
+          weatherInfo,
+          weatherHistory: historyResults.rows,
         });
+      });
     })
     .catch((error) => {
-      console.error("Error fetching geo data:", error);
+      console.error("Error fetching weather data:", error);
       res.status(500).send("Internal Server Error");
     });
 }
@@ -237,7 +279,7 @@ app.post("/api", (req, res) => {
       };
       const insertQuery = `
         INSERT INTO weather_requests (user_id, location, temperature, feels_like_temperature, description, request_timestamp)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, NOW())
       `;
       pool.query(insertQuery, [
         req.user.id,
@@ -245,7 +287,6 @@ app.post("/api", (req, res) => {
         weatherInfo.temp,
         weatherInfo.tempFeel,
         weatherInfo.description,
-        timestamp,
       ]);
       console.log(weatherInfo);
       res.json({
@@ -253,3 +294,5 @@ app.post("/api", (req, res) => {
       });
     });
 });
+
+//show search history
